@@ -11,10 +11,52 @@ import (
 func main() {
 	rawInput, _ := os.ReadFile("./input/day2.txt")
 	fmt.Println("[day 2 - part 1] - total rps points:", day2First(string(rawInput)))
+	fmt.Println("[day 2 - part 2] - total rps points:", day2Second(string(rawInput)))
 
 	rawInput, _ = os.ReadFile("./input/day1.txt")
 	fmt.Println("day 1 - part 2:", day1First(string(rawInput)))
 }
+
+func day2Second(input string) int {
+	totalPoints := 0
+	for _, line := range strings.Split(input, "\n") {
+		roundOptions := strings.Split(line, " ")
+		if len(roundOptions) != 2 {
+			continue
+		}
+		yourOption := stringToRpsOption(roundOptions[0])
+		var myOutcome RspOutcome = roundOptions[1]
+		var myOption RpsOption
+
+		switch myOutcome {
+			case OutComeDraw: myOption = yourOption
+			case OutcomeWin: 
+				switch yourOption {
+					case Rock: myOption = Paper
+					case Paper: myOption = Scissors
+					case Scissors: myOption = Rock
+				}
+			case OutcomeLose:
+				switch yourOption {
+					case Rock: myOption = Scissors
+					case Paper: myOption = Rock
+					case Scissors: myOption = Paper
+				}
+		}
+
+		roundPoints := playRps(yourOption, myOption)
+		totalPoints += int(roundPoints)
+	}
+	return totalPoints
+}
+
+type RspOutcome = string
+
+const (
+	OutcomeLose RspOutcome = "X"
+	OutComeDraw RspOutcome = "Y"
+	OutcomeWin RspOutcome = "Z"
+)
 
 func day2First(input string) int {
 	totalPoints := 0
@@ -23,7 +65,11 @@ func day2First(input string) int {
 		if len(roundOptions) != 2 {
 			continue
 		}
-		roundPoints := playRps(roundOptions[0], roundOptions[1])
+
+		yourOption := stringToRpsOption(roundOptions[0])
+		myOption := stringToRpsOption(roundOptions[1])
+
+		roundPoints := playRps(yourOption, myOption)
 		totalPoints += int(roundPoints)
 	}
 	return totalPoints
@@ -58,9 +104,7 @@ func stringToRpsOption(input string) RpsOption {
 	}
 }
 
-func playRps(youInput string, meInput string) int8 {
-	yourOption := stringToRpsOption(youInput)
-	myOption := stringToRpsOption(meInput)
+func playRps(yourOption RpsOption, myOption RpsOption) int8 {
 	var outcome RpsResult
 
 	if myOption == yourOption {
